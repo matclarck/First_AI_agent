@@ -15,14 +15,14 @@ async def search_stage_offers():
         await page.goto(url)
 
         # Wait for job listings to load
-        await page.wait_for_selector('div.base-card relative w-full hover:no-underline')
+        await page.wait_for_selector('div.base-card')
 
         # Extract job listings
-        job_listings = await page.query_selector_all('div.base-card relative w-full hover:no-underline')
+        job_listings = await page.query_selector_all('div.base-card')
         
         for job in job_listings:
-            title = await job.query_selector('h3.base-search-card__title').text_content()
-            company = await job.query_selector('h4.base-search-card__subtitle').text_content()
+            title = await job.query_selector('.title').text_content()
+            company = await job.query_selector('.company').text_content()
             link = await job.query_selector('a')['href']
             
             print(f"Title: {title}")
