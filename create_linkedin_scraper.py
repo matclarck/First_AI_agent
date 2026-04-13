@@ -1,30 +1,36 @@
-import requests
-from bs4 import BeautifulSoup
+import asyncio
+from playwright.async_api import async_playwright
 
-def search_stage_offers(keyword, location):
-    url = f"https://www.linkedin.com/jobs/search/?keywords={keyword}&location={location}"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
-    }
-    
-    response = requests.get(url, headers=headers)
-    
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.text, 'html.parser')
-        job_listings = soup.find_all('div', class_='base-card relative w-full hover:no-underline')
+async def search_stage_offers():
+    keyword = "stage recherche statistique"
+    location = "Paris"
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        context = await browser.new_context()
+        page = await context.new_page()
+
+        # Navigate to LinkedIn jobs search page
+        url = f"https://www.linkedin.com/jobs/search/?keywords={keyword}&location={location}"
+        await page.goto(url)
+
+        # Wait for job listings to load
+        await page.wait_for_selector('div.base-card relative w-full hover:no-underline')
+
+        # Extract job listings
+        job_listings = await page.query_selector_all('div.base-card relative w-full hover:no-underline')
         
         for job in job_listings:
-            title = job.find('h3', class_='base-search-card__title').text.strip()
-            company = job.find('h4', class_='base-search-card__subtitle').text.strip()
-            link = job.find('a')['href']
+            title = await job.query_selector('h3.base-search-card__title').text_content()
+            company = await job.query_selector('h4.base-search-card__subtitle').text_content()
+            link = await job.query_selector('a')['href']
             
             print(f"Title: {title}")
             print(f"Company: {company}")
             print(f"Link: https://www.linkedin.com{link}\n")
-    else:
-        print("Failed to retrieve data")
+
+        # Close browser
+        await browser.close()
 
 if __name__ == '__main__':
-    keyword = input("Enter the job keyword: ")
-    location = input("Enter the location: ")
-    search_stage_offers(keyword, location)
+    asyncio.run(search_stage_offers())
