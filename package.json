@@ -1,0 +1,18 @@
+{
+  "name": "first-ai-agent",
+  "version": "0.1.0",
+  "description": "Agent IA 100% open source avec Ollama + Continue",
+  "main": "src/agent.js",
+  "scripts": {
+    "dev": "node src/agent.js",
+    "test": "node --test tests/"
+  },
+  "dependencies": {
+    "ollama": "^0.5.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
