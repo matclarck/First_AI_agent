@@ -41,6 +41,7 @@ npm run dev
 First_AI_agent/
 ├── .continue/
 │   ├── config.json          # Config Continue (modèle, context providers, commandes)
+    ├── contexte.md          # contexte du projet pour que l'agent conserve du contexte 
 │   └── prompts/
 │       └── agent.prompt     # Prompt système du mode Agent
 ├── docs/
@@ -52,7 +53,7 @@ First_AI_agent/
 │       └── index.js         # Tools disponibles (shell, read/write fichiers)
 ├── .env.example
 ├── .gitignore
-├── CLAUDE.md                # Règles du projet lues par Claude Code
+├── Rules.md                # Règles du projet lues par l'agent
 ├── package.json
 └── README.md
 ```
@@ -60,7 +61,7 @@ First_AI_agent/
 ## Ajouter un skill
 
 1. Créer un fichier `docs/skills/mon-skill.md`
-2. L'ajouter dans `CLAUDE.md` sous "Available Skills"
+2. L'ajouter dans `Rules.md` sous "Available Skills"
 3. Le mentionner dans `.continue/prompts/agent.prompt`
 
 ## Ajouter un tool
