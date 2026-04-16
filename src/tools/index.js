@@ -1,77 +1,83 @@
-import { execSync } from "child_process";
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import fs from 'fs';
+import { execSync } from 'child_process';
+import { read_pdf } from './pdf_reader.js'; // Importe le nouvel outil
 
-// ─────────────────────────────────────────
-//  Définition des tools (format Ollama)
-// ─────────────────────────────────────────
+// Définition des outils pour le modèle (Format Ollama)
 export const tools = [
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "run_shell",
-      description: "Exécute une commande shell et retourne la sortie.",
+      name: 'read_file',
+      description: 'Lit le contenu d’un fichier texte.',
       parameters: {
-        type: "object",
-        properties: {
-          command: { type: "string", description: "La commande shell à exécuter." },
-        },
-        required: ["command"],
+        type: 'object',
+        properties: { path: { type: 'string' } },
+        required: ['path'],
       },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "read_file",
-      description: "Lit le contenu d'un fichier texte.",
+      name: 'read_pdf',
+      description: 'Extrait le texte d’un fichier PDF (utile pour les rapports scientifiques).',
       parameters: {
-        type: "object",
-        properties: {
-          path: { type: "string", description: "Chemin relatif ou absolu du fichier." },
-        },
-        required: ["path"],
+        type: 'object',
+        properties: { path: { type: 'string' } },
+        required: ['path'],
       },
     },
   },
   {
-    type: "function",
+    type: 'function',
     function: {
-      name: "write_file",
-      description: "Écrit du contenu dans un fichier (crée ou écrase).",
+      name: 'write_file',
+      description: 'Écrit du contenu dans un fichier.',
       parameters: {
-        type: "object",
+        type: 'object',
         properties: {
-          path: { type: "string", description: "Chemin du fichier." },
-          content: { type: "string", description: "Contenu à écrire." },
+          path: { type: 'string' },
+          content: { type: 'string' },
         },
-        required: ["path", "content"],
+        required: ['path', 'content'],
       },
     },
   },
+  {
+    type: 'function',
+    function: {
+      name: 'run_shell',
+      description: 'Exécute une commande shell (ex: ls, python script.py).',
+      parameters: {
+        type: 'object',
+        properties: { command: { type: 'string' } },
+        required: ['command'],
+      },
+    },
+  }
 ];
 
-// ─────────────────────────────────────────
-//  Exécution des tools
-// ─────────────────────────────────────────
+// Logique d'exécution
 export async function executeTool(name, args) {
   try {
     switch (name) {
-      case "run_shell": {
-        const output = execSync(args.command, { encoding: "utf8", timeout: 10000 });
-        return output.trim();
-      }
-      case "read_file": {
-        if (!existsSync(args.path)) return `Erreur : fichier introuvable → ${args.path}`;
-        return readFileSync(args.path, "utf8");
-      }
-      case "write_file": {
-        writeFileSync(args.path, args.content, "utf8");
-        return `Fichier écrit : ${args.path}`;
-      }
+      case 'read_file':
+        return fs.readFileSync(args.path, 'utf8');
+      
+      case 'read_pdf':
+        return await read_pdf(args); // Appelle ta fonction pdf-parse
+        
+      case 'write_file':
+        fs.writeFileSync(args.path, args.content, 'utf8');
+        return `Fichier ${args.path} écrit avec succès.`;
+        
+      case 'run_shell':
+        return execSync(args.command).toString();
+        
       default:
-        return `Erreur : outil inconnu → ${name}`;
+        return `Outil inconnu : ${name}`;
     }
-  } catch (err) {
-    return `Erreur lors de l'exécution de ${name} : ${err.message}`;
+  } catch (error) {
+    return `Erreur lors de l'exécution de ${name} : ${error.message}`;
   }
 }
